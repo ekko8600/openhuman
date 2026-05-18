@@ -1,6 +1,6 @@
 # literature-ingest
 
-Use this skill when a user asks an agent to build or update a local personal literature knowledge base from papers, notes, or exported web pages.
+Use this skill when a user asks an agent to build or update a local personal literature wiki from papers, notes, or exported web pages.
 
 ## Supported inputs
 
@@ -12,11 +12,11 @@ Use this skill when a user asks an agent to build or update a local personal lit
 ## Commands
 
 ```bash
-cargo run --manifest-path literature-core/Cargo.toml -- document add /path/to/paper.pdf --title "Paper title" --doi "10.xxxx/example"
-cargo run --manifest-path literature-core/Cargo.toml -- index build --document-id <document_id>
+cargo run --manifest-path literature_wiki/Cargo.toml -- --workspace .literature-wiki document add /path/to/paper.pdf --title "Paper title" --doi "10.xxxx/example"
+cargo run --manifest-path literature_wiki/Cargo.toml -- --workspace .literature-wiki index build --document-id <document_id>
 ```
 
-Use `--workspace /path/to/kb` or `LITERATURE_CORE_WORKSPACE=/path/to/kb` to keep the library in a project-local directory.
+Use `--workspace /path/to/kb` or `LITERATURE_WIKI_WORKSPACE=/path/to/kb` to keep the library in a project-local directory.
 
 ## JSON-RPC
 
@@ -27,7 +27,7 @@ Use `--workspace /path/to/kb` or `LITERATURE_CORE_WORKSPACE=/path/to/kb` to keep
 Pipe the request into:
 
 ```bash
-cargo run --manifest-path literature-core/Cargo.toml -- json-rpc
+cargo run --manifest-path literature_wiki/Cargo.toml -- --workspace .literature-wiki json-rpc
 ```
 
 ## Agent behavior

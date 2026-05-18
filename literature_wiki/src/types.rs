@@ -133,6 +133,36 @@ pub struct ChunkCitation {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SummaryRequest {
+    pub document_id: String,
+    #[serde(default = "default_summary_language")]
+    pub language: String,
+    pub focus: Option<String>,
+    #[serde(default = "default_summary_chunks")]
+    pub max_chunks: usize,
+}
+
+pub fn default_summary_language() -> String {
+    "Chinese".to_string()
+}
+
+pub fn default_summary_chunks() -> usize {
+    12
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct LiteratureSummary {
+    pub document_id: String,
+    pub title: Option<String>,
+    pub language: String,
+    pub model: String,
+    pub focus: Option<String>,
+    pub summary_markdown: String,
+    pub cited_chunks: Vec<String>,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ControllerSchema {
     pub method: String,
     pub description: String,

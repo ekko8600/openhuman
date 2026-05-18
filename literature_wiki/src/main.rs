@@ -1,5 +1,5 @@
 use clap::Parser;
-use literature_core::cli::{run, Cli};
+use literature_wiki::cli::{run, Cli};
 
 fn main() {
     if let Err(error) = run(Cli::parse()) {

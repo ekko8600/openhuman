@@ -1,9 +1,13 @@
 use crate::documents::{add_document, get_document, list_documents, remove_document};
 use crate::index::{build_index, search_index};
+use crate::llm::DeepSeekConfig;
 use crate::manifest::controller_schemas;
 use crate::rpc::{handle_json_rpc, JsonRpcRequest};
 use crate::store::LiteratureStore;
-use crate::types::{AddDocumentRequest, BuildIndexRequest, PaperMetadata, SearchRequest};
+use crate::summaries::create_summary;
+use crate::types::{
+    AddDocumentRequest, BuildIndexRequest, PaperMetadata, SearchRequest, SummaryRequest,
+};
 use anyhow::{Context, Result};
 use clap::{Args, Parser, Subcommand};
 use serde::Serialize;
@@ -11,10 +15,10 @@ use std::io::{self, Read};
 use std::path::PathBuf;
 
 #[derive(Debug, Parser)]
-#[command(name = "literature-core")]
+#[command(name = "literature-wiki")]
 #[command(about = "Agent-first personal literature knowledge base CLI")]
 pub struct Cli {
-    #[arg(long, global = true, env = "LITERATURE_CORE_WORKSPACE")]
+    #[arg(long, global = true, env = "LITERATURE_WIKI_WORKSPACE")]
     pub workspace: Option<PathBuf>,
     #[command(subcommand)]
     pub command: Command,
@@ -26,6 +30,8 @@ pub enum Command {
     Document(DocumentCommand),
     #[command(subcommand)]
     Index(IndexCommand),
+    #[command(subcommand)]
+    Summary(SummaryCommand),
     Schema,
     /// Read a JSON-RPC request from stdin and write a JSON-RPC response.
     JsonRpc,
@@ -54,6 +60,19 @@ pub struct AddArgs {
     pub arxiv_id: Option<String>,
     #[arg(long)]
     pub source_url: Option<String>,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum SummaryCommand {
+    Create {
+        document_id: String,
+        #[arg(long, default_value = "Chinese")]
+        language: String,
+        #[arg(long)]
+        focus: Option<String>,
+        #[arg(long, default_value_t = crate::types::default_summary_chunks())]
+        max_chunks: usize,
+    },
 }
 
 #[derive(Debug, Subcommand)]
@@ -111,6 +130,24 @@ pub fn run(cli: Cli) -> Result<()> {
         )?),
         Command::Index(IndexCommand::Search { query, limit }) => {
             print_json(&search_index(&store, SearchRequest { query, limit })?)
+        }
+        Command::Summary(SummaryCommand::Create {
+            document_id,
+            language,
+            focus,
+            max_chunks,
+        }) => {
+            let config = DeepSeekConfig::from_env()?;
+            print_json(&create_summary(
+                &store,
+                SummaryRequest {
+                    document_id,
+                    language,
+                    focus,
+                    max_chunks,
+                },
+                &config,
+            )?)
         }
         Command::Schema => print_json(&controller_schemas()),
         Command::JsonRpc => {

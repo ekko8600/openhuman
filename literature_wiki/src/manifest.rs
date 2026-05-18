@@ -38,5 +38,11 @@ pub fn controller_schemas() -> Vec<ControllerSchema> {
             required: vec!["query".into()],
             optional: vec!["limit".into()],
         },
+        ControllerSchema {
+            method: "literature.summary.create".into(),
+            description: "Create and persist a DeepSeek V4 Pro-backed Markdown analysis for one indexed document.".into(),
+            required: vec!["document_id".into()],
+            optional: vec!["language".into(), "focus".into(), "max_chunks".into()],
+        },
     ]
 }

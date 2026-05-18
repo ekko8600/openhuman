@@ -1,11 +1,11 @@
 # literature-search
 
-Use this skill when the answer should come from the user's local literature knowledge base rather than general web knowledge.
+Use this skill when the answer should come from the user's local literature wiki rather than general web knowledge.
 
 ## Commands
 
 ```bash
-cargo run --manifest-path literature-core/Cargo.toml -- index search "retrieval augmented generation limitations" --limit 8
+cargo run --manifest-path literature_wiki/Cargo.toml -- --workspace .literature-wiki index search "retrieval augmented generation limitations" --limit 8
 ```
 
 ## JSON-RPC
@@ -16,7 +16,7 @@ cargo run --manifest-path literature-core/Cargo.toml -- index search "retrieval 
 
 ## Output expectations
 
-Always preserve citation fields returned by `literature-core`:
+Always preserve citation fields returned by `literature_wiki`:
 
 - `document_id`
 - `title`
@@ -26,7 +26,7 @@ Always preserve citation fields returned by `literature-core`:
 - `citation.source_path`
 - `citation.doi`
 
-When answering the user, cite the local document title or path and include the section if available. Do not invent page numbers; this first version tracks chunk ordinals and sections.
+When answering the user, cite the local document title or path and include the section if available. Do not invent page numbers; this version tracks chunk ordinals and sections.
 
 ## Failure handling
 

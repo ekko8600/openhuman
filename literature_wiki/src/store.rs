@@ -1,4 +1,4 @@
-use crate::types::{DocumentChunk, LiteratureDocument};
+use crate::types::{DocumentChunk, LiteratureDocument, LiteratureSummary};
 use anyhow::{Context, Result};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -16,14 +16,14 @@ impl LiteratureStore {
     }
 
     pub fn from_env_or_default() -> Result<Self> {
-        if let Ok(path) = std::env::var("LITERATURE_CORE_WORKSPACE") {
+        if let Ok(path) = std::env::var("LITERATURE_WIKI_WORKSPACE") {
             return Ok(Self::new(path));
         }
 
         let home = std::env::var_os("HOME")
             .map(PathBuf::from)
-            .context("HOME is not set; pass --workspace or set LITERATURE_CORE_WORKSPACE")?;
-        Ok(Self::new(home.join(".literature-core")))
+            .context("HOME is not set; pass --workspace or set LITERATURE_WIKI_WORKSPACE")?;
+        Ok(Self::new(home.join(".literature-wiki")))
     }
 
     pub fn root(&self) -> &Path {
@@ -34,6 +34,7 @@ impl LiteratureStore {
         fs::create_dir_all(self.documents_dir())?;
         fs::create_dir_all(self.index_dir())?;
         fs::create_dir_all(self.collections_dir())?;
+        fs::create_dir_all(self.summaries_dir())?;
         Ok(())
     }
 
@@ -47,6 +48,10 @@ impl LiteratureStore {
 
     pub fn collections_dir(&self) -> PathBuf {
         self.root.join("collections")
+    }
+
+    pub fn summaries_dir(&self) -> PathBuf {
+        self.root.join("summaries")
     }
 
     pub fn document_dir(&self, document_id: &str) -> PathBuf {
@@ -67,6 +72,10 @@ impl LiteratureStore {
 
     pub fn global_chunks_path(&self) -> PathBuf {
         self.index_dir().join("chunks.json")
+    }
+
+    pub fn summary_path(&self, document_id: &str) -> PathBuf {
+        self.summaries_dir().join(format!("{document_id}.json"))
     }
 
     pub fn write_json<T: Serialize>(&self, path: impl AsRef<Path>, value: &T) -> Result<()> {
@@ -128,5 +137,17 @@ impl LiteratureStore {
             return Ok(Vec::new());
         }
         self.read_json(path)
+    }
+
+    pub fn save_summary(&self, summary: &LiteratureSummary) -> Result<()> {
+        self.write_json(self.summary_path(&summary.document_id), summary)
+    }
+
+    pub fn load_summary(&self, document_id: &str) -> Result<Option<LiteratureSummary>> {
+        let path = self.summary_path(document_id);
+        if !path.exists() {
+            return Ok(None);
+        }
+        self.read_json(path).map(Some)
     }
 }

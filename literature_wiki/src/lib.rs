@@ -8,13 +8,16 @@
 pub mod cli;
 pub mod documents;
 pub mod index;
+pub mod llm;
 pub mod manifest;
 pub mod parser;
 pub mod rpc;
 pub mod store;
+pub mod summaries;
 pub mod types;
 
 pub use documents::{add_document, get_document, list_documents, remove_document};
 pub use index::{build_index, search_index};
 pub use store::LiteratureStore;
+pub use summaries::create_summary;
 pub use types::*;

@@ -1,8 +1,12 @@
 use crate::documents::{add_document, get_document, list_documents, remove_document};
 use crate::index::{build_index, search_index};
+use crate::llm::DeepSeekConfig;
 use crate::manifest::controller_schemas;
 use crate::store::LiteratureStore;
-use crate::types::{AddDocumentRequest, BuildIndexRequest, PaperMetadata, SearchRequest};
+use crate::summaries::create_summary;
+use crate::types::{
+    AddDocumentRequest, BuildIndexRequest, PaperMetadata, SearchRequest, SummaryRequest,
+};
 use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -99,6 +103,14 @@ pub fn dispatch(store: &LiteratureStore, request: JsonRpcRequest) -> Result<Valu
             let request = serde_json::from_value::<SearchRequest>(request.params)
                 .context("invalid search params")?;
             Ok(serde_json::to_value(search_index(store, request)?)?)
+        }
+        "literature.summary.create" => {
+            let request = serde_json::from_value::<SummaryRequest>(request.params)
+                .context("invalid summary params")?;
+            let config = DeepSeekConfig::from_env()?;
+            Ok(serde_json::to_value(create_summary(
+                store, request, &config,
+            )?)?)
         }
         method => bail!("unknown method: {method}"),
     }
